@@ -1,0 +1,82 @@
+plugins {
+    id 'spring-boot-conventions'
+}
+
+description = 'User Account Management Service'
+
+contracts {
+    failOnNoContracts = false
+}
+
+dependencies {
+    // Validation API
+    implementation 'jakarta.validation:jakarta.validation-api:3.0.2'
+    // MapStruct for DTO mapping
+    implementation libs.mapstruct
+    annotationProcessor libs.mapstruct.processor
+
+    // Spring Security OAuth2 (versions managed by BOM)
+    implementation 'org.springframework.security:spring-security-oauth2-jose'
+    implementation 'org.springframework.security:spring-security-oauth2-resource-server'
+    implementation 'org.springframework.security:spring-security-config'
+
+    // JWT handling
+    implementation 'com.nimbusds:nimbus-jose-jwt:9.37.3'
+
+    // Web
+    implementation libs.bundles.spring.boot.web.basic
+
+    // Security - Resource Server for JWT validation
+    implementation libs.bundles.spring.boot.security.oauth2
+
+    // Database - Reactive R2DBC
+    implementation libs.spring.boot.starter.data.r2dbc
+    runtimeOnly libs.r2dbc.postgresql
+    runtimeOnly libs.postgresql // For Flyway migrations
+
+    // Service Discovery
+    implementation libs.bundles.spring.cloud.eureka.client
+
+    // Validation
+    implementation libs.spring.boot.starter.validation
+
+    // Utilities
+    implementation libs.commons.lang3
+
+    // Testing
+    testImplementation libs.bundles.testcontainers
+    testImplementation libs.testcontainers.postgresql
+}
+
+// Integration tests configuration
+sourceSets {
+    integrationTest {
+        java {
+            srcDir 'src/integration-test/java'
+        }
+        resources {
+            srcDir 'src/integration-test/resources'
+        }
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += output + compileClasspath
+    }
+}
+
+tasks.register('integrationTest', Test) {
+    description = 'Runs integration tests'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+
+    shouldRunAfter test
+
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
+}
+
+check.dependsOn integrationTest
+
+bootRun {
+    systemProperty 'spring.profiles.active', 'local'
+}

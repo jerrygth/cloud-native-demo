@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PayFlow — Razorpay</title>
+    <meta name="description" content="Payment demo — Quarkus + Razorpay + React" />
+    <script src="/env-config.js"></script>
+    <!--
+      Razorpay Checkout Script
+      ════════════════════════════════════════════════════════════════
+      IMPORTANT: Load from CDN in index.html — NOT via npm install.
+      Razorpay does not publish their checkout popup as an npm package.
+      Loading it here (not dynamically) avoids any delay when the user
+      clicks "Pay". The useRazorpayCheckout hook also dynamically loads
+      it as a fallback if window.Razorpay is not yet available.
+
+      This script adds window.Razorpay — see types/index.ts for the
+      TypeScript declaration that makes it type-safe.
+    -->
+    <script src="https://checkout.razorpay.com/v1/checkout.js" async></script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

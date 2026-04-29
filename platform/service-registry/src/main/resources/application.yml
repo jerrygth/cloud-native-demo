@@ -1,0 +1,17 @@
+# Add security to Eureka
+spring:
+  security:
+    user:
+      name: eureka
+      password: secret
+eureka:
+  instance:
+    instance-id: ${spring.cloud.client.ip-address}:${spring.application.name}:${server.port}
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,info"
+  endpoint:
+    health:
+      show-details: always

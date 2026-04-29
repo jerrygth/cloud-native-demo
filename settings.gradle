@@ -1,0 +1,17 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+        mavenCentral()
+    }
+}
+
+rootProject.name = 'cloud-native-demo'
+include 'platform:api-gateway'
+include 'platform:service-registry'
+findProject(':platform:api-gateway')?.name = 'api-gateway'
+findProject(':platform:service-registry')?.name = 'service-registry'
+include 'services:user-service'
+findProject(':services:user-service')?.name = 'user-service'
+include 'services:payment-service'
+findProject(':services:payment-service')?.name = 'payment-service'
+

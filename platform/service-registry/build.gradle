@@ -1,0 +1,22 @@
+plugins {
+    id 'spring-boot-conventions'
+}
+
+description = 'Eureka Service Registry'
+
+contracts {
+    failOnNoContracts = false
+}
+
+dependencies {
+
+    implementation libs.spring.cloud.starter.netflix.eureka.server
+    implementation libs.spring.boot.starter.security
+
+    testImplementation libs.spring.security.test
+}
+
+// No clients should register with this service
+bootRun {
+    systemProperty 'spring.profiles.active', 'local'
+}

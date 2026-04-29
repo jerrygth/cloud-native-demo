@@ -1,0 +1,59 @@
+spring:
+  # OAuth2 Resource Server - JWT validation via Auth0 JWKS
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${AUTH0_ISSUER_URI:https://dev-cxy2s4rbkgtrmylk.us.auth0.com/}
+          jwk-set-uri: ${AUTH0_JWKS_URI:https://dev-cxy2s4rbkgtrmylk.us.auth0.com/.well-known/jwks.json}
+          audiences: http://localhost:8081
+  config:
+    activate:
+      on-profile: local
+
+  # R2DBC Reactive Database
+  r2dbc:
+    url: ${SPRING_R2DBC_URL:r2dbc:postgresql://localhost:5432/user_management}
+    username: ${SPRING_R2DBC_USERNAME:admin}
+    password: ${SPRING_R2DBC_PASSWORD:password}
+    pool:
+      initial-size: 5
+      max-size: 20
+      max-idle-time: 30m
+
+server:
+  port: ${SERVER_PORT:8086}
+
+# Eureka Service Discovery
+eureka:
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${server.port}
+  client:
+    fetch-registry: true
+    register-with-eureka: true
+    serviceUrl:
+      defaultZone: http://eureka:secret@localhost:8761/eureka
+
+# Actuator - expose health and info only
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+
+
+# Logging - structured, level-controlled (no System.out.println)
+logging:
+  level:
+    root: INFO
+    com.org.dev.useraccount: DEBUG
+    org.springframework.security: DEBUG
+    org.springframework.security.oauth2: DEBUG
+    org.springframework.security.oauth2.server.resource: DEBUG
+    org.springframework.security.oauth2.jwt: DEBUG
+    org.springframework.web.server.adapter.HttpWebHandlerAdapter: TRACE
+    org.springframework.security.web.access: DEBUG
+    org.springframework.r2dbc: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

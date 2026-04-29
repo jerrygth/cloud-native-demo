@@ -1,0 +1,13 @@
+plugins {
+    id 'groovy-gradle-plugin'
+}
+
+repositories {
+    mavenCentral()
+    gradlePluginPortal()
+}
+
+dependencies {
+    implementation "io.quarkus:io.quarkus.gradle.plugin:3.22.3"
+    implementation "org.springframework.cloud:spring-cloud-contract-gradle-plugin:4.1.5"
+}

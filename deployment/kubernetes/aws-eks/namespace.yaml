@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: payments-demo
+  labels:
+    name: payments-demo
+    environment: payments-demo

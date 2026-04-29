@@ -1,0 +1,221 @@
+[versions]
+# Core Java version
+java = "21"
+
+# Spring Framework
+spring-boot = "3.4.1"
+spring-cloud = "2024.0.0"
+spring-dependency-management = "1.1.7"
+spring-ai = "1.0.0-M5"
+
+# Quarkus
+quarkus-platform = "3.22.3"
+stork-eureka = "2.7.7"
+
+# Database
+postgresql = "42.7.1"
+r2dbc-postgresql = "1.0.5.RELEASE"
+pgvector = "0.1.5"
+
+# External APIs
+stripe = "31.0.0"
+openai-java = "0.18.2"
+
+# Security & Auth
+spring-security = "6.2.1"
+jjwt = "0.12.5"
+
+# Observability
+micrometer = "1.12.1"
+micrometer-tracing = "1.2.1"
+
+# Utilities
+lombok = "1.18.30"
+mapstruct = "1.5.5.Final"
+commons-lang3 = "3.14.0"
+
+# Messaging
+kafka = "3.6.1"
+
+# Testing
+junit = "5.10.1"
+assertj = "3.25.1"
+mockito = "5.10.0"
+testcontainers = "1.19.3"
+rest-assured = "5.4.0"
+wiremock = "3.3.1"
+
+# Build tools
+jacoco = "0.8.11"
+spotless = "6.25.0"
+
+[libraries]
+# ========================================
+# Spring Boot Starters (no version needed - managed by BOM)
+# ========================================
+spring-boot-starter-webflux = { module = "org.springframework.boot:spring-boot-starter-webflux" }
+spring-boot-starter-security = { module = "org.springframework.boot:spring-boot-starter-security" }
+spring-boot-starter-oauth2-resource-server = { module = "org.springframework.boot:spring-boot-starter-oauth2-resource-server" }
+spring-boot-starter-oauth2-client = { module = "org.springframework.boot:spring-boot-starter-oauth2-client" }
+spring-boot-starter-data-jpa = { module = "org.springframework.boot:spring-boot-starter-data-jpa" }
+spring-boot-starter-data-r2dbc = { module = "org.springframework.boot:spring-boot-starter-data-r2dbc" }
+spring-boot-starter-actuator = { module = "org.springframework.boot:spring-boot-starter-actuator" }
+spring-boot-starter-validation = { module = "org.springframework.boot:spring-boot-starter-validation" }
+spring-boot-devtools = { module = "org.springframework.boot:spring-boot-devtools" }
+
+
+# Spring Boot Test
+spring-boot-starter-test = { module = "org.springframework.boot:spring-boot-starter-test" }
+spring-security-test = { module = "org.springframework.security:spring-security-test" }
+reactor-test = { module = "io.projectreactor:reactor-test" }
+
+# ========================================
+# Spring Cloud (no version needed - managed by BOM)
+# ========================================
+spring-cloud-starter-gateway = { module = "org.springframework.cloud:spring-cloud-starter-gateway" }
+spring-cloud-starter-netflix-eureka-server = { module = "org.springframework.cloud:spring-cloud-starter-netflix-eureka-server" }
+spring-cloud-starter-netflix-eureka-client = { module = "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client" }
+spring-cloud-starter-circuitbreaker-reactor-resilience4j = { module = "org.springframework.cloud:spring-cloud-starter-circuitbreaker-reactor-resilience4j" }
+spring-cloud-starter-loadbalancer = { module = "org.springframework.cloud:spring-cloud-starter-loadbalancer" }
+
+# ========================================
+# Spring AI (version needed - not in Spring Boot BOM yet)
+# ========================================
+spring-ai-openai = { module = "org.springframework.ai:spring-ai-openai-spring-boot-starter", version.ref = "spring-ai" }
+spring-ai-pgvector = { module = "org.springframework.ai:spring-ai-pgvector-store-spring-boot-starter", version.ref = "spring-ai" }
+
+# ========================================
+# Quarkus (managed by Quarkus BOM)
+# ========================================
+quarkus-bom = { module = "io.quarkus.platform:quarkus-bom", version.ref = "quarkus-platform" }
+quarkus-arc = { module = "io.quarkus:quarkus-arc" }
+quarkus-rest = { module = "io.quarkus:quarkus-rest" }
+quarkus-rest-jackson = { module = "io.quarkus:quarkus-rest-jackson" }
+quarkus-hibernate-orm-panache = { module = "io.quarkus:quarkus-hibernate-orm-panache" }
+quarkus-jdbc-postgresql = { module = "io.quarkus:quarkus-jdbc-postgresql" }
+quarkus-flyway = { module = "io.quarkus:quarkus-flyway" }
+quarkus-smallrye-jwt = { module = "io.quarkus:quarkus-smallrye-jwt" }
+quarkus-oidc = { module = "io.quarkus:quarkus-oidc" }
+quarkus-smallrye-health = { module = "io.quarkus:quarkus-smallrye-health" }
+quarkus-micrometer-registry-prometheus = { module = "io.quarkus:quarkus-micrometer-registry-prometheus" }
+quarkus-rest-client = { module = "io.quarkus:quarkus-rest-client" }
+quarkus-rest-client-jackson = { module = "io.quarkus:quarkus-rest-client-jackson" }
+quarkus-messaging-kafka = { module = "io.quarkus:quarkus-messaging-kafka" }
+quarkus-devservices-postgresql = { module = "io.quarkus:quarkus-devservices-postgresql" }
+quarkus-hibernate-validator = { module = "io.quarkus:quarkus-hibernate-validator" }
+quarkus-smallrye-stork = { module = "io.quarkus:quarkus-smallrye-stork" }
+quarkus-smallrye-openapi = { module = "io.quarkus:quarkus-smallrye-openapi" }
+stork-service-registration-eureka = { module = "io.smallrye.stork:stork-service-registration-eureka", version.ref = "stork-eureka"}
+stork-service-discovery-eureka = { module = "io.smallrye.stork:stork-service-discovery-eureka", version.ref = "stork-eureka" }
+
+
+# Quarkus Test
+quarkus-junit5 = { module = "io.quarkus:quarkus-junit5" }
+rest-assured = { module = "io.rest-assured:rest-assured" }
+quarkus-test-security = { module = "io.quarkus:quarkus-test-security" }
+quarkus-test-security-jwt = { module = "io.quarkus:quarkus-test-security-jwt" }
+
+
+# ========================================
+# Database Drivers (version specified)
+# ========================================
+postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
+r2dbc-postgresql = { module = "org.postgresql:r2dbc-postgresql", version.ref = "r2dbc-postgresql" }
+pgvector = { module = "com.pgvector:pgvector", version.ref = "pgvector" }
+
+# ========================================
+# External APIs (version specified)
+# ========================================
+stripe-java = { module = "com.stripe:stripe-java", version.ref = "stripe" }
+
+# ========================================
+# Observability (managed by Spring Boot BOM for micrometer-*)
+# ========================================
+micrometer-registry-prometheus = { module = "io.micrometer:micrometer-registry-prometheus" }
+micrometer-tracing-bridge-brave = { module = "io.micrometer:micrometer-tracing-bridge-brave" }
+micrometer-observation = { module = "io.micrometer:micrometer-observation" }
+
+# ========================================
+# Utilities (version specified)
+# ========================================
+lombok = { module = "org.projectlombok:lombok", version.ref = "lombok" }
+mapstruct = { module = "org.mapstruct:mapstruct", version.ref = "mapstruct" }
+mapstruct-processor = { module = "org.mapstruct:mapstruct-processor", version.ref = "mapstruct" }
+commons-lang3 = { module = "org.apache.commons:commons-lang3", version.ref = "commons-lang3" }
+caffeine = { module = "com.github.ben-manes.caffeine:caffeine" }
+
+# ========================================
+# Testing (versions managed by Spring Boot BOM for junit, mockito)
+# ========================================
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-platform-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+assertj-core = { module = "org.assertj:assertj-core", version.ref = "assertj" }
+mockito-core = { module = "org.mockito:mockito-core" }
+mockito-junit-jupiter = { module = "org.mockito:mockito-junit-jupiter" }
+testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
+testcontainers-junit-jupiter = { module = "org.testcontainers:junit-jupiter" }
+testcontainers-postgresql = { module = "org.testcontainers:postgresql" }
+testcontainers-kafka = { module = "org.testcontainers:kafka" }
+wiremock = { module = "org.wiremock:wiremock-standalone", version.ref = "wiremock" }
+
+# ========================================
+# Bundles - Commonly used together
+# ========================================
+[bundles]
+spring-boot-web-basic = [
+    "spring-boot-starter-webflux",
+    "spring-boot-starter-actuator",
+]
+
+spring-boot-security-oauth2 = [
+    "spring-boot-starter-security",
+    "spring-boot-starter-oauth2-resource-server",
+]
+
+spring-cloud-eureka-client = [
+    "spring-cloud-starter-netflix-eureka-client",
+    "spring-cloud-starter-loadbalancer",
+]
+
+spring-observability = [
+    "micrometer-registry-prometheus",
+    "micrometer-tracing-bridge-brave",
+]
+
+quarkus-rest-api = [
+    "quarkus-rest",
+    "quarkus-rest-jackson",
+    "quarkus-smallrye-health",
+    "quarkus-micrometer-registry-prometheus",
+]
+
+quarkus-persistence = [
+    "quarkus-hibernate-orm-panache",
+    "quarkus-jdbc-postgresql",
+]
+
+testing-spring = [
+    "spring-boot-starter-test",
+    "spring-security-test",
+    "reactor-test",
+]
+
+testing-quarkus = [
+    "quarkus-junit5",
+    "rest-assured",
+]
+
+testcontainers = [
+    "testcontainers-junit-jupiter",
+    "testcontainers-postgresql"
+]
+
+# ========================================
+# Plugins
+# ========================================
+[plugins]
+spring-boot = { id = "org.springframework.boot", version.ref = "spring-boot" }
+spring-dependency-management = { id = "io.spring.dependency-management", version.ref = "spring-dependency-management" }
+quarkus = { id = "io.quarkus", version.ref = "quarkus-platform" }
+jacoco = { id = "jacoco" }
+spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }

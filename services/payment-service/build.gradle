@@ -1,0 +1,59 @@
+plugins {
+    id 'io.quarkus'
+    id 'quarkus-conventions'
+}
+
+description = 'Payment Service'
+
+dependencies {
+
+    // Persistence
+    implementation libs.quarkus.hibernate.orm.panache
+    implementation libs.quarkus.jdbc.postgresql
+    implementation libs.quarkus.flyway
+
+    implementation libs.quarkus.smallrye.jwt
+    implementation libs.quarkus.smallrye.openapi
+    implementation libs.quarkus.oidc
+
+    // Reactive REST Client
+    implementation libs.quarkus.rest.client
+    implementation libs.quarkus.rest.client.jackson
+
+    // Validation
+    implementation libs.quarkus.hibernate.validator
+
+    // Service discovery
+    //implementation libs.stork.service.registration.eureka
+    implementation "com.github.fmcejudo:quarkus-eureka:1.2.0"
+    implementation 'io.quarkus:quarkus-container-image-docker'
+
+    // Observability
+    implementation libs.quarkus.smallrye.health
+    implementation libs.quarkus.micrometer.registry.prometheus
+
+    // ── RAZORPAY SDK ──────────────────────────────────────────────
+    // Official Razorpay Java SDK — latest stable version
+    // Provides: RazorpayClient, Orders, Payments, Utils, RazorpayException
+    // razorpay-java uses okhttp3 internally (bundled)
+    implementation 'com.razorpay:razorpay-java:1.4.8'
+
+    // Kafka (if needed)
+    //implementation libs.quarkus.messaging.kafka
+
+    // ── TEST ──────────────────────────────────────────────────────
+    testImplementation 'io.quarkus:quarkus-junit5'
+    testImplementation 'io.rest-assured:rest-assured'
+    testImplementation 'io.quarkus:quarkus-test-security-oidc'
+    // @InjectMock — replaces CDI beans with Mockito mocks in @QuarkusTest
+    // Includes transitive Mockito: when(), verify(), ArgumentCaptor
+    testImplementation 'io.quarkus:quarkus-junit5-mockito'
+    testImplementation libs.quarkus.test.security
+    testImplementation libs.quarkus.test.security.jwt
+}
+
+
+tasks.named('test') {
+    useJUnitPlatform()
+    systemProperty 'java.util.logging.manager', 'org.jboss.logmanager.LogManager'
+}

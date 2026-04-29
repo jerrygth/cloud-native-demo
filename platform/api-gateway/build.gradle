@@ -1,0 +1,29 @@
+plugins {
+    id 'spring-boot-conventions'
+}
+
+description = 'API Gateway with OAuth2 Client'
+
+contracts {
+    failOnNoContracts = false
+}
+
+dependencies {
+
+    implementation libs.spring.cloud.starter.gateway
+    implementation libs.bundles.spring.cloud.eureka.client
+
+    // OAuth2 Client for handling user authentication
+    implementation libs.spring.boot.starter.oauth2.client
+    implementation libs.spring.boot.starter.security
+
+    // Circuit Breaker
+    implementation libs.spring.cloud.starter.circuitbreaker.reactor.resilience4j
+
+
+
+}
+
+bootRun {
+    systemProperty 'spring.profiles.active', 'local'
+}

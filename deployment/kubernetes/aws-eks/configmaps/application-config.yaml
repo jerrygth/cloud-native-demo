@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: application-config
+  namespace: payments-demo
+data:
+  eureka.url: "http://eureka:secret@service-registry:8761/eureka/"
+  auth0.issuer.uri: "https://dev-cxy2s4rbkgtrmylk.us.auth0.com/"
+  auth0.jwks.uri: "https://dev-cxy2s4rbkgtrmylk.us.auth0.com/.well-known/jwks.json"

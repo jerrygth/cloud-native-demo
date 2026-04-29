@@ -1,0 +1,11 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Link, NavLink, Outlet } from "react-router-dom";
+import { useUIStore } from "../../store/uiStore";
+import { useCurrentUser } from "../../hooks/usePayments";
+export function AppLayout() {
+    const { user, logout } = useCurrentUser();
+    const { theme, toggleTheme } = useUIStore();
+    return (_jsxs("div", { className: "app-shell", "data-theme": theme, children: [_jsxs("header", { className: "navbar", children: [_jsxs("div", { className: "navbar__brand", children: [_jsxs(Link, { to: "/dashboard", className: "brand-link", children: [_jsx("span", { className: "brand-logo", children: "\u20B9" }), _jsx("span", { className: "brand-name", children: "PayFlow" })] }), _jsx("span", { className: "brand-tag", children: "razorpay" })] }), _jsxs("nav", { className: "navbar__nav", children: [_jsx(NavLink, { to: "/dashboard", className: ({ isActive }) => `nav-link ${isActive ? "nav-link--active" : ""}`, children: "Dashboard" }), _jsx(NavLink, { to: "/history", className: ({ isActive }) => `nav-link ${isActive ? "nav-link--active" : ""}`, children: "History" })] }), _jsxs("div", { className: "navbar__actions", children: [_jsx("button", { className: "icon-btn", onClick: toggleTheme, "aria-label": "Toggle theme", children: theme === "dark" ? "☀" : "◑" }), user && (_jsxs("div", { className: "user-menu", children: [user.picture
+                                        ? _jsx("img", { src: user.picture, alt: user.name, className: "user-avatar" })
+                                        : _jsx("div", { className: "user-avatar user-avatar--fallback", children: user.name?.[0]?.toUpperCase() ?? "U" }), _jsxs("div", { className: "user-info", children: [_jsx("span", { className: "user-name", children: user.name }), _jsx("span", { className: "user-email", children: user.email })] }), _jsx("button", { className: "btn btn--ghost btn--sm", onClick: logout, children: "Logout" })] }))] })] }), _jsx("main", { className: "main-content", children: _jsx(Outlet, {}) }), _jsxs("footer", { className: "app-footer", children: [_jsx("span", { children: "PayFlow \u00B7 Quarkus + Razorpay + Auth0 BFF" }), import.meta.env.MODE === "development" && (_jsx("span", { className: "badge badge--warning", children: "DEV" }))] })] }));
+}

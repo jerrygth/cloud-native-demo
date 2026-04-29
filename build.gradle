@@ -1,0 +1,71 @@
+plugins {
+    // Apply plugins but don't configure them at root level
+    alias(libs.plugins.spring.boot) apply false
+    alias(libs.plugins.spring.dependency.management) apply false
+    id 'io.quarkus' apply false
+    alias(libs.plugins.spotless) apply false
+}
+
+// Apply to all projects
+allprojects {
+    group = 'com.org.dev.cloud'
+    version = '1.0.0-SNAPSHOT'
+
+    repositories {
+        mavenCentral()
+        maven { url 'https://repo.spring.io/milestone' } // For Spring AI milestones
+    }
+}
+
+
+// Apply to all subprojects (excluding root)
+subprojects {
+    apply plugin: 'java'
+    apply plugin: 'idea'
+    apply plugin: 'eclipse'
+
+    java {
+        toolchain {
+            languageVersion = JavaLanguageVersion.of(21)
+        }
+    }
+
+    // Common dependencies for all services
+    dependencies {
+        // Lombok
+        compileOnly libs.lombok
+        annotationProcessor libs.lombok
+        testCompileOnly libs.lombok
+        testAnnotationProcessor libs.lombok
+    }
+}
+
+// Task to build all services
+task buildAllServices {
+    group = 'build'
+    description = 'Builds all microservices'
+
+    dependsOn(
+            ':platform:service-registry:build',
+            ':platform:api-gateway:build',
+            ':services:user-service:build',
+            ':services:payment-service:build',
+            ':services:ai-service:build',
+            ':services:product-service:build'
+    )
+}
+
+// Task to build all Docker images
+task buildAllImages {
+    group = 'docker'
+    description = 'Builds all Docker images'
+
+    dependsOn(
+            ':platform:service-registry:bootBuildImage',
+            ':platform:api-gateway:bootBuildImage',
+            ':services:user-service:bootBuildImage',
+            ':services:payment-service:buildNative', // Quarkus
+            ':services:ai-service:bootBuildImage',
+            ':services:product-service:buildNative'  // Quarkus
+    )
+}

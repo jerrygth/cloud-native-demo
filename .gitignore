@@ -1,0 +1,74 @@
+# ========================
+# Gradle / Java
+# ========================
+.gradle/
+build/
+**/build/
+!gradle/wrapper/gradle-wrapper.jar
+
+# ========================
+# Quarkus
+# ========================
+.quarkus/
+
+# ========================================
+# Environment / Secrets (NEVER commit these)
+# ========================================
+deployment/docker-compose/.env
+services/payment-service/.env
+frontend/payment-frontend/.env.*
+
+# Local config overrides
+**/src/main/resources/application-local.*
+
+
+# ========================
+# IDE
+# ========================
+.idea/
+*.iml
+*.ipr
+*.iws
+.vscode/
+out/
+
+# ========================
+# Eclipse / NetBeans
+# ========================
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+bin/
+nbproject/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# ========================
+# Frontend (React)
+# ========================
+frontend/payment-frontend/node_modules/
+frontend/payment-frontend/dist/
+frontend/payment-frontend/build/
+
+# ========================
+# Logs
+# ========================
+*.log
+
+# ========================
+# Env files
+# ========================
+.env
+*.env
+
+# ========================
+# OS files
+# ========================
+.DS_Store
+Thumbs.db

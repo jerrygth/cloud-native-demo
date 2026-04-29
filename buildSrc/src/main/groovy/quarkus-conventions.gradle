@@ -1,0 +1,44 @@
+plugins {
+    id 'java'
+    id 'io.quarkus'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+dependencies {
+    implementation enforcedPlatform(libs.quarkus.bom)
+    implementation libs.quarkus.arc
+    implementation libs.bundles.quarkus.rest.api
+    testImplementation libs.bundles.testing.quarkus
+}
+quarkus {
+    finalName = "${project.name}-${project.version}"
+}
+
+// Native build configuration
+tasks.register('buildNativeImage') {
+    group = 'build'
+    description = 'Builds native executable'
+    dependsOn 'build'
+
+    doLast {
+        exec {
+            workingDir project.projectDir
+            commandLine './gradlew', 'build',
+                    '-Dquarkus.package.type=native',
+                    '-Dquarkus.native.container-build=true',
+                    '-Dquarkus.native.builder-image=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21'
+        }
+    }
+}
+
+// Development mode task
+tasks.register('dev') {
+    group = 'application'
+    description = 'Runs application in Quarkus dev mode with live reload'
+    dependsOn 'quarkusDev'
+}

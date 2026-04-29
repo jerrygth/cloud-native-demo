@@ -1,0 +1,33 @@
+FROM gradle:8.12-jdk21 AS builder
+
+WORKDIR /build
+
+COPY . .
+
+RUN gradle :services:payment-service:build -x test
+
+FROM eclipse-temurin:21-jre-jammy
+
+# Set working dir
+WORKDIR /work/
+
+# Copy only necessary files (layer optimization)
+COPY --from=builder /build/services/payment-service/build/quarkus-app/lib/ /work/lib/
+COPY --from=builder /build/services/payment-service/build/quarkus-app/*.jar /work/
+COPY --from=builder /build/services/payment-service/build/quarkus-app/app/ /work/app/
+COPY --from=builder /build/services/payment-service/build/quarkus-app/quarkus/ /work/quarkus/
+
+RUN useradd -r -u 1001 quarkus && chown -R quarkus /work
+USER quarkus
+
+# JVM tuning for containers
+ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 \
+               -Djava.util.logging.manager=org.jboss.logmanager.LogManager \
+               -XX:+UseContainerSupport \
+               -XX:MaxRAMPercentage=75.0"
+
+# Expose port
+EXPOSE 8087
+
+# Run app
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar quarkus-run.jar"]

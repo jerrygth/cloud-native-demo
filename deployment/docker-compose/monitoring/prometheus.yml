@@ -1,0 +1,57 @@
+global:
+  scrape_interval: 15s
+  scrape_timeout: 10s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'cloud-native-demo-local'
+    environment: 'development'
+
+# Scrape configurations
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+        labels:
+          application: 'prometheus'
+
+  # Service Registry (Eureka)
+  - job_name: 'service-registry'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['service-registry:8761']
+        labels:
+          application: 'service-registry'
+          service: 'platform'
+
+  # API Gateway
+  - job_name: 'api-gateway'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['api-gateway:8081']
+        labels:
+          application: 'api-gateway'
+          service: 'platform'
+
+  # User Service
+  - job_name: 'user-service'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['user-service:8086']
+        labels:
+          application: 'user-service'
+          service: 'business'
+
+  # Payment Service (Quarkus)
+  - job_name: 'payment-service'
+    metrics_path: '/q/metrics'
+    scrape_interval: 10s
+    static_configs:
+      - targets: ['payment-service:8087']
+        labels:
+          application: 'payment-service'
+          service: 'business'
+
