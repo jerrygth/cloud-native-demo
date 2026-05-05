@@ -32,6 +32,9 @@ services:
       - "3000:80"                    # Access frontend at http://localhost:3000
     environment:
       NODE_ENV: production
+      VITE_API_GATEWAY_URL: ${API_GATEWAY_URL}
+      VITE_LOGIN_URL: ${AUTH0_LOGIN_URL}
+      VITE_LOGOUT_URL: ${APP_LOGOUT_URL}
     networks:
       - ecommerce-network
     depends_on:
