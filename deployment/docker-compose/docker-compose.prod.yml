@@ -1,106 +1,189 @@
-version: '3.9'
-
 services:
 
-  # ====================== PostgreSQL Database ======================
-  postgres:
-    image: postgres:16-alpine
-    container_name: postgres-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: myappdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres123
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # ===================
+  # Microservices deployment in AWS cloud
+  # ===================
 
-  # ====================== Eureka Service Registry ======================
-  eureka-server:
-    build:
-      context: ../..
-      dockerfile: platform/service-registry/src/main/docker/Dockerfile   # adjust path if needed
-    container_name: eureka-server
+  frontend:
+    image: 822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/payment_frontend
+    container_name: payment-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"                    # Access frontend at http://localhost:3000
+    mem_limit: 128m
+    mem_reservation: 96m
+    cpus: 0.25
+    environment:
+      NODE_ENV: production
+      VITE_API_GATEWAY_URL: ${API_GATEWAY_URL}
+      VITE_LOGIN_URL: ${AUTH0_LOGIN_URL}
+      VITE_LOGOUT_URL: ${APP_LOGOUT_URL}
+    networks:
+      - ecommerce-network
+    depends_on:
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  service-registry:
+    image: 822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/service_registry
+    container_name: service-registry
     restart: unless-stopped
     ports:
       - "8761:8761"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-    depends_on:
-      - postgres
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 30s
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_INSTANCE_HOSTNAME: service-registry
+      JAVA_OPTS: >-
+        -Xms128m
+        -Xmx256m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
 
-  # ====================== API Gateway ======================
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.50
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "-u", "eureka:secret", "http://localhost:8761/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   api-gateway:
-    build:
-      context: ../..
-      dockerfile: platform/api-gateway/src/main/docker/Dockerfile
+    image: 822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/api_gateway
     container_name: api-gateway
     restart: unless-stopped
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
-      interval: 15s
-      timeout: 5s
-      retries: 5
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:secret@service-registry:8761/eureka
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
+      SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_REDIRECT_URI: ${AUTH0_REDIRECT_URI}
+      REACT_URL: http://frontend:80
+      SERVICES_USER_ACCOUNT_BASE_URL: http://UserAccountRegistration
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx768m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
 
-  # ====================== User Service ======================
+    mem_limit: 1024m
+    mem_reservation: 768m
+    cpus: 1.0
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   user-service:
-    build:
-      context: ../..
-      dockerfile: services/user-service/src/main/docker/Dockerfile   # adjust if your path is platform/user-service
+    image: 822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/user_service
     container_name: user-service
     restart: unless-stopped
+    ports:
+      - "8086:8086"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/myappdb
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres123
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+      SPRING_PROFILES_ACTIVE: prod
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:secret@service-registry:8761/eureka
+      SPRING_R2DBC_URL: r2dbc:postgresql://${RDS_HOST}:5432/users
+      SPRING_R2DBC_USERNAME: userservice
+      SPRING_R2DBC_PASSWORD: ${DB_PASSWORD_USERSERVICE}
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx512m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
 
-  # ====================== Payment Service ======================
+    mem_limit: 768m
+    mem_reservation: 512m
+    cpus: 0.75
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8086//actuator/health/readiness"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   payment-service:
-    build:
-      context: ../..
-      dockerfile: services/payment-service/src/main/docker/Dockerfile   # or platform/payment-service if different
+    image: 822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/payment_service
     container_name: payment-service
     restart: unless-stopped
+    ports:
+      - "8087:8087"
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/myappdb
-      - SPRING_DATASOURCE_USERNAME=postgres
-      - SPRING_DATASOURCE_PASSWORD=postgres123
-      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
-    depends_on:
-      eureka-server:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
+      QUARKUS_PROFILE: prod
+      # DB
+      DB_URL: jdbc:postgresql://${RDS_HOST}:5432/payments
+      DB_USER: paymentservice
+      DB_PASSWORD: ${DB_PASSWORD_PAYMENTSERVICE}
+      # OIDC (Auth0)
+      OIDC_AUTH_SERVER_URL: https://dev-cxy2s4rbkgtrmylk.us.auth0.com
+      OIDC_CLIENT_ID: ${AUTH0_CLIENT_ID}
+      RAZORPAY_KEY_ID: ${RAZORPAY_KEY_ID}
+      RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
+      RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
+      PORT: 8087
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx640m
+        -XX:+UseContainerSupport
 
-volumes:
-  postgres-data:
+    mem_limit: 1024m
+    mem_reservation: 768m
+    cpus: 0.75
+    depends_on:
+      service-registry:
+        condition: service_healthy
+    networks:
+      - ecommerce-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8087/q/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  ecommerce-network:
+    driver: bridge

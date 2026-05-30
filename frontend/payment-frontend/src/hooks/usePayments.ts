@@ -165,8 +165,8 @@ function getEnv(key: string): string {
     ?? '';
 }
 
-const LOGIN_URL = getEnv(VITE_LOGIN_URL) || "http://localhost:8081/oauth2/authorization/auth0";
-const LOGOUT_URL = getEnv(VITE_LOGOUT_URL) || "http://localhost:8081/logout";
+const LOGIN_URL = getEnv('VITE_LOGIN_URL') || "http://localhost:8081/oauth2/authorization/auth0";
+const LOGOUT_URL = getEnv('VITE_LOGOUT_URL') || "http://localhost:8081/logout";
 
 export function useCurrentUser() {
   const queryClient = useQueryClient();

@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Slf4j
@@ -23,8 +22,7 @@ public class EurekaSecurityConfig {
                         .requestMatchers("/eureka/v2/apps/**").permitAll()   // sometimes used
                         // Kubernetes probes (no auth)
                         .requestMatchers(
-                                "/actuator/health/liveness",
-                                "/actuator/health/readiness"
+                                "/actuator/health/**"
                         ).permitAll()
                         // Eureka dashboard static resources (no auth for assets)
                         .requestMatchers(

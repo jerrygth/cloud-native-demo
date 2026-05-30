@@ -20,6 +20,8 @@ RUN ./gradlew :services:user-service:clean services:user-service:bootJar -x test
 
 FROM eclipse-temurin:21-jre-alpine
 
+RUN apk add --no-cache curl
+
 RUN addgroup -S spring && adduser -S spring -G spring
 
 WORKDIR /app
@@ -28,11 +30,10 @@ COPY --from=builder /build/services/user-service/build/libs/*.jar app.jar
 
 USER spring
 
-EXPOSE 8081
+EXPOSE 8086
 
 ENV JAVA_OPTS="\
-    -XX:MaxRAMPercentage=75.0 \
     -XX:+UseG1GC \
     -Djava.security.egd=file:/dev/./urandom"
 
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/app.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar /app/app.jar"]

@@ -32,8 +32,8 @@ eureka:
   client:
     fetch-registry: true
     register-with-eureka: true
-    serviceUrl:
-      defaultZone: http://eureka:secret@localhost:8761/eureka
+    service-url:
+      default-zone: http://eureka:secret@localhost:8761/eureka
 
 # Actuator - expose health and info only
 management:

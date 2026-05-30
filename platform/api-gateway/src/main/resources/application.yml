@@ -50,7 +50,7 @@ spring:
         - id: useracount
           uri: lb://UserAccountRegistration
           predicates:
-            - Path=/user/**
+            - Path=/api/v1/users/**
           filters:
            - RemoveRequestHeader=Cookie
            - name: CircuitBreaker

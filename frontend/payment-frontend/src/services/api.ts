@@ -42,7 +42,7 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401) {
       const isMeEndpoint = (error.config?.url ?? "").includes("/api/me");
       if (!isMeEndpoint) {
-        const loginUrl = getEnv(VITE_LOGIN_URL) ||
+        const loginUrl = getEnv('VITE_LOGIN_URL') ||
           "http://localhost:8081/oauth2/authorization/auth0";
         window.location.href = `${loginUrl}?returnTo=${encodeURIComponent(window.location.pathname)}`;
       }

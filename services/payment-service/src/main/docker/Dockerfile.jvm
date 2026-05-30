@@ -8,6 +8,10 @@ RUN gradle :services:payment-service:build -x test
 
 FROM eclipse-temurin:21-jre-jammy
 
+RUN apt-get update && \
+    apt-get install -y curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Set working dir
 WORKDIR /work/
 
@@ -30,4 +34,4 @@ ENV JAVA_OPTS="-Dquarkus.http.host=0.0.0.0 \
 EXPOSE 8087
 
 # Run app
-ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar quarkus-run.jar"]
+ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -jar quarkus-run.jar"]

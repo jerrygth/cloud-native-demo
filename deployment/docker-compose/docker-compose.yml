@@ -30,8 +30,11 @@ services:
     container_name: payment-frontend
     ports:
       - "3000:80"                    # Access frontend at http://localhost:3000
+    mem_limit: 128m
+    mem_reservation: 96m
+    cpus: 0.25
     environment:
-      NODE_ENV: production
+      NODE_ENV: dev
       VITE_API_GATEWAY_URL: ${API_GATEWAY_URL}
       VITE_LOGIN_URL: ${AUTH0_LOGIN_URL}
       VITE_LOGOUT_URL: ${APP_LOGOUT_URL}
@@ -56,6 +59,14 @@ services:
     environment:
       SPRING_PROFILES_ACTIVE: local
       EUREKA_INSTANCE_HOSTNAME: service-registry
+      JAVA_OPTS: >-
+        -Xms128m
+        -Xmx256m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
+    mem_limit: 512m
+    mem_reservation: 256m
+    cpus: 0.50
     networks:
       - ecommerce-network
     healthcheck:
@@ -78,6 +89,15 @@ services:
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_ID: ${AUTH0_CLIENT_ID}
       SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_SECRET: ${AUTH0_CLIENT_SECRET}
       REACT_URL: http://frontend:80
+      SERVICES_USER_ACCOUNT_BASE_URL: http://UserAccountRegistration
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx768m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
+    mem_limit: 1024m
+    mem_reservation: 768m
+    cpus: 1.0
     depends_on:
       service-registry:
         condition: service_healthy
@@ -104,10 +124,17 @@ services:
       SPRING_R2DBC_USERNAME: userservice
       SPRING_R2DBC_PASSWORD: userpass123
       SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx512m
+        -XX:+UseContainerSupport
+        -XX:MaxRAMPercentage=75
+
+    mem_limit: 768m
+    mem_reservation: 512m
+    cpus: 0.75
     depends_on:
       service-registry:
-        condition: service_healthy
-      postgres:
         condition: service_healthy
     networks:
       - ecommerce-network
@@ -138,17 +165,22 @@ services:
       RAZORPAY_KEY_SECRET: ${RAZORPAY_KEY_SECRET}
       RAZORPAY_WEBHOOK_SECRET: ${RAZORPAY_WEBHOOK_SECRET}
       PORT: 8087
-    depends_on:
-      postgres:
-        condition: service_healthy
+      JAVA_OPTS: >-
+        -Xms256m
+        -Xmx640m
+        -XX:+UseContainerSupport
+
+    mem_limit: 1024m
+    mem_reservation: 768m
+    cpus: 0.75
     networks:
       - ecommerce-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8087/q/health/live"]
+      test: ["CMD", "curl", "-f", "http://localhost:8087/q/health/ready"]
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 60s
+      start_period: 90s
 
  # ===================
   # Monitoring (Optional)

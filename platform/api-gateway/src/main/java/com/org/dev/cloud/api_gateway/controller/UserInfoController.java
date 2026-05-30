@@ -22,7 +22,7 @@ public class UserInfoController {
     private final WebClient userServiceClient;
 
     public UserInfoController(
-            @Value("${services.user-account.base-url:http://localhost:8086}") String baseUrl) {
+            @Value("${services.user-account.base-url:http://UserAccountRegistration}") String baseUrl) {
         this.userServiceClient = WebClient.builder()
                 .baseUrl(baseUrl)
                 .build();
@@ -58,7 +58,6 @@ public class UserInfoController {
     }
 
     // ── FETCH PROFILE FROM USERACCOUNT SERVICE ───────────────────────
-    @SuppressWarnings("unchecked")
     private Mono<Map<String, Object>> fetchAndMergeProfile(
             String bearerToken, Map<String, Object> identity) {
 
@@ -86,7 +85,6 @@ public class UserInfoController {
     }
 
     // ── MERGE AUTH0 IDENTITY WITH USERACCOUNT PROFILE ────────────────
-    @SuppressWarnings("unchecked")
     private Map<String, Object> mergeProfile(
             Map<String, Object> identity, Map<String, Object> profile) {
 
@@ -178,8 +176,7 @@ public class UserInfoController {
     }
 
     /**
-     * Parse Auth0's "name" claim into [firstName, lastName].
-     *
+     * Parse Auth0's "name" claim into [firstName, lastName].     *
      * Auth0 "name" claim is typically:
      *   "Jerry Thomas"   → ["Jerry", "Thomas"]
      *   "jerry.thomas@gmail.com" → ["jerry.thomas", ""] (email used as name)
