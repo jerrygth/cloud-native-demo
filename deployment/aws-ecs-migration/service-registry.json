@@ -1,0 +1,27 @@
+{
+  "family": "serviceregistry",
+  "executionRoleArn": "arn:aws:iam::822770412815:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "serviceregistry",
+      "image": "822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/service_registry:1.0.0",
+      "portMappings": [{ "containerPort": 8761, "protocol": "tcp" }],
+      "environment": [
+        { "name": "SPRING_APPLICATION_NAME", "value": "serviceregistry" },
+        { "name": "SERVER_PORT", "value": "8761" }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/serviceregistry",
+          "awslogs-region": "ap-south-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

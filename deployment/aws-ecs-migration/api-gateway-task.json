@@ -1,0 +1,42 @@
+{
+  "family": "api-gateway",
+  "executionRoleArn": "arn:aws:iam::822770412815:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "1024",
+  "memory": "2048",
+  "containerDefinitions": [
+    {
+      "name": "api-gateway",
+      "image": "822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/api_gateway:1.0.0",
+      "portMappings": [{ "containerPort": 8081, "protocol": "tcp" }],
+      "environment": [
+        { "name": "SPRING_PROFILES_ACTIVE","value": "prod"},
+        {"name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE","value": "http://eureka:secret@eureka.microservices.local:8761/eureka" },
+        {"name": "REACT_URL","value": "https://d3cxjtievlz5zc.cloudfront.net/"},
+        {"name": "SERVICES_USER_ACCOUNT_BASE_URL","value": "http://UserAccountRegistration"},
+        {"name": "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_REDIRECT_URI","value": "https://d3cxjtievlz5zc.cloudfront.net/login/oauth2/code/auth0"},
+        {"name": "JAVA_OPTS","value": "-Xms256m -Xmx768m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75 -XX:+UseG1GC -XX:+UseStringDeduplication -XX:+OptimizeStringConcat"}
+      ],
+      "secrets": [
+        {"name": "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_ID","valueFrom": "/learning/auth0/client-id"},
+        {"name": "SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_AUTH0_CLIENT_SECRET","valueFrom": "/learning/auth0/client-secret"}
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/api-gateway",
+          "awslogs-region": "ap-south-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health/readiness || exit 1"],
+        "interval": 30,
+        "timeout": 10,
+        "retries": 5,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

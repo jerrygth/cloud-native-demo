@@ -1,0 +1,37 @@
+{
+  "family": "useraccount",
+  "executionRoleArn": "arn:aws:iam::822770412815:role/ecsTaskExecutionRole",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "containerDefinitions": [
+    {
+      "name": "useraccount",
+      "image": "822770412815.dkr.ecr.ap-south-2.amazonaws.com/payments_demo/service_registry:1.0.0",
+      "portMappings": [{ "containerPort": 8086, "protocol": "tcp" }],
+      "environment": [
+        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
+        { "name": "EUREKA_CLIENT_SERVICEURL_DEFAULTZONE", "value": "http://eureka:secret@eureka.microservices.local:8761/eureka"},
+        { "name": "SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI","value": "https://dev-cxy2s4rbkgtrmylk.us.auth0.com/"},
+        {"name": "SPRING_R2DBC_URL", "value": "r2dbc:postgresql://learning-postgres.cdkqcgmmqweh.ap-south-2.rds.amazonaws.com:5432/useraccount"},
+        {"name": "JAVA_OPTS","value": "-XX:+UseContainerSupport -XX:InitialRAMPercentage=25 -XX:MaxRAMPercentage=70 -XX:+UseG1GC"},
+        {"name": "SPRING_R2DBC_USERNAME", "value": "userservice"}
+      ],
+      "secrets": [
+        {
+          "name": "SPRING_R2DBC_PASSWORD",
+          "valueFrom": "/learning/db/user-service-password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/useraccount",
+          "awslogs-region": "ap-south-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}

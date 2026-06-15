@@ -1,6 +1,6 @@
 # Cloud-Native Payments Platform (Demo)
 
-A production-grade, cloud-native payments platform built using Spring Cloud, Quarkus, and React.  
+A cloud-native platform reference implementation built using Spring Cloud, Quarkus, and React.  
 This project demonstrates modern microservices architecture with secure authentication, reactive systems, and scalable infrastructure patterns.
 
 ---
@@ -118,3 +118,89 @@ RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
 | Eureka Dashboard | http://localhost:8761  |
 | User Service | http://localhost:8086 |
 | Payment Service | http://localhost:8087 |
+
+Architecture
+┌─────────────────────────────────────────────────────────────────┐
+│                        React SPA (Frontend)                     │
+│                                         						  │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ HTTPS
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                    API Gateway (Spring Cloud)                   │
+│  - OAuth2 Client (Session Management)                           │
+│  - Rate Limiting                                                │
+│  - Token Relay to Backend Services                              │
+│  - CORS Configuration                                           │
+└──────────────────┬──────────────┬───────────────────────────────┘
+                   │              │             
+                   ↓              ↓             
+              ┌──────────┐   ┌─────────────┐
+              │  User    │   │  Payment    │
+              │ Account  │   │  Service    │
+              │ (Spring) │   │ (Quarkus)   │
+              └──────────┘   └─────────────┘
+                    │               │         
+                    ↓               ↓         
+                ┌──────────┐   ┌──────────┐  
+                │PostgreSQL│   │PostgreSQL│
+                │   DB     │   │    DB    │
+                └──────────┘   └──────────┘  
+                            │
+                            ↓
+                    ┌──────────────┐
+                    │ RazorPay API │
+                    └──────────────┘
+                    All registered with
+                          ↓
+                  ┌──────────────────┐
+                  │ Eureka Service   │
+                  │    Registry      │
+                  └──────────────────┘
+
+AWS Deployment:
+
+EC2 + Docker Compose (Using Free Tier)
+All services run on a single EC2 c7 large using Docker Compose — identical to local development, pointed at RDS instead of a local Postgres container.
+
+Browser → EC2 public IP :80
+│
+Nginx (reverse proxy)
+├── /* ──────────────▶ React build (served from disk)
+└── /api/* ──────────▶ API Gateway container :8081
+                                │
+                            All other containers
+                            (Docker bridge network)
+                                │
+                            RDS PostgreSQL
+
+ECS Fargate Deployment
+Each service runs as an independent ECS Fargate task — no EC2 instances to manage.
+CloudFront routes static assets to S3 and API traffic to the Application Load Balancer.
+
+Browser → CloudFront (d3cxjtievlz5zc.cloudfront.net)
+                    │
+                    ├── /* ──────────────▶ S3 (React SPA, private + OAC)
+                    │
+                    └── /api/* /oauth2/*
+                    /login /logout /user/*
+                            │
+                            ▼
+                ALB  microservices-alb  :80
+                            │
+                            ▼
+                    ┌─────────────────────────────┐
+                    │  ECS Cluster                │  ap-south-2
+                    │  microservices-cluster      │
+                    │                             │
+                    │  [api-gateway:4]      :8081 │ ← ALB target group
+                    │  [serviceregistry:1]  :8761 │ ← Cloud Map DNS
+                    │  [useraccount:2]      :8086 │ ← internal only
+                    └─────────────────────────────┘
+                                │
+                                ▼
+                RDS PostgreSQL  (db.t3.micro)
+                learning-postgres.cdkqcgmmqweh.ap-south-2.rds.amazonaws.com
+
+ECR pull fix (common issue): Fargate tasks need assignPublicIp=ENABLED and an outbound port 443 rule on the security group to reach the ECR API endpoint.
+Without both, tasks fail with ResourceInitializationError: i/o timeout — which looks like a permissions error but is a network connectivity problem.
