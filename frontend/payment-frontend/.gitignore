@@ -1,0 +1,11 @@
+# Ignore build output
+dist/
+dist-ssr/
+
+# Ignore compiled JS files inside src directory
+src/**/*.js
+src/**/*.jsx
+src/**/*.js.map
+
+# Node modules
+node_modules/

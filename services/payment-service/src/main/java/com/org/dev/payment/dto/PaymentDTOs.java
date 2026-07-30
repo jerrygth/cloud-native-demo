@@ -48,6 +48,8 @@ public class PaymentDTOs {
 
     public record RefundRequest(
         @NotNull Long paymentId,
+
+        @Positive(message = "Amount must be positive")
         Long amount,
         @Pattern(regexp = "normal|optimum|instant")
         String speed

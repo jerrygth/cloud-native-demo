@@ -7,7 +7,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProvider;
+import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientProviderBuilder;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultReactiveOAuth2AuthorizedClientManager;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.web.server.SecurityWebFilterChain;
 import org.springframework.security.web.server.authentication.RedirectServerAuthenticationSuccessHandler;
 import org.springframework.security.web.server.csrf.CookieServerCsrfTokenRepository;
@@ -21,6 +26,8 @@ import org.springframework.web.cors.reactive.CorsConfigurationSource;
 import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 import reactor.core.publisher.Mono;
 import org.springframework.security.web.server.util.matcher.ServerWebExchangeMatcher.MatchResult;
+import org.springframework.beans.factory.annotation.Value;
+
 
 import java.net.URI;
 import java.util.Arrays;
@@ -31,6 +38,13 @@ import java.util.Set;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+
+    @Value("${app.auth0.domain}")
+    String auth0Domain;
+    @Value("${spring.security.oauth2.client.registration.auth0.client-id}")
+    String auth0ClientId;
+    @Value("${app.frontend-url}")
+    String frontendUrl;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http, ReactiveClientRegistrationRepository repository) {
@@ -105,9 +119,8 @@ public class SecurityConfig {
                         .logoutSuccessHandler((exchange, authentication) -> {
                             // After local logout, clear Auth0's SSO session too
                             // This prevents auto-login if user visits again
-                            String auth0LogoutUrl = "https://dev-cxy2s4rbkgtrmylk.us.auth0.com/v2/logout"
-                                    + "?client_id=${AUTH0_CLIENT_ID}"
-                                    + "&returnTo=http://localhost:3000/login";
+                            String auth0LogoutUrl =auth0Domain + "/v2/logout?client_id=" + auth0ClientId
+                                    + "&returnTo=" + frontendUrl + "/login";
                             exchange.getExchange().getResponse().setStatusCode(HttpStatus.FOUND);
                             exchange.getExchange().getResponse().getHeaders()
                                     .setLocation(URI.create(auth0LogoutUrl));
@@ -126,7 +139,7 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         // Single origin now — everything goes through :8081
-        config.setAllowedOrigins(List.of("http://localhost:3000"));
+        config.setAllowedOrigins(List.of(frontendUrl));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Content-Type", "X-XSRF-TOKEN", "Accept"));
         config.setAllowCredentials(true);
@@ -135,5 +148,27 @@ public class SecurityConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return source;
+    }
+
+    @Bean
+    ReactiveOAuth2AuthorizedClientManager authorizedClientManager(
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+            ServerOAuth2AuthorizedClientRepository authorizedClientRepository) {
+
+        ReactiveOAuth2AuthorizedClientProvider authorizedClientProvider =
+                ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
+                        .authorizationCode()
+                        .refreshToken()
+                        .clientCredentials()
+                        .build();
+
+        DefaultReactiveOAuth2AuthorizedClientManager manager =
+                new DefaultReactiveOAuth2AuthorizedClientManager(
+                        clientRegistrationRepository,
+                        authorizedClientRepository);
+
+        manager.setAuthorizedClientProvider(authorizedClientProvider);
+
+        return manager;
     }
 }

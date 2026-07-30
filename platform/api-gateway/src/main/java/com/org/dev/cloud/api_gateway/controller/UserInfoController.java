@@ -1,5 +1,6 @@
 package com.org.dev.cloud.api_gateway.controller;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpHeaders;
@@ -13,9 +14,12 @@ import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 import reactor.core.publisher.Mono;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeoutException;
 
+@Slf4j
 @RestController
 public class UserInfoController {
 
@@ -66,6 +70,7 @@ public class UserInfoController {
                 .header(HttpHeaders.AUTHORIZATION, bearerToken)
                 .retrieve()
                 .bodyToMono(new ParameterizedTypeReference<Map<String, Object>>() {})
+                .timeout(Duration.ofSeconds(5))
                 .map(profile -> mergeProfile(identity, profile))
                 .onErrorResume(ex -> {
                     if (isNotFound(ex)) {
@@ -75,6 +80,8 @@ public class UserInfoController {
                         withFlag.put("profileComplete",      false);
                         withFlag.put("_needsRegistration",   true);
                         return Mono.just(withFlag);
+                    }else if(ex.getCause() instanceof TimeoutException tex){
+                      log.error("Request timed out", tex);
                     }
                     // Service unavailable — degrade gracefully, user still logged in
                     Map<String, Object> fallback = new HashMap<>(identity);

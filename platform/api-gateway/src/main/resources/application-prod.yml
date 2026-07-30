@@ -1,0 +1,19 @@
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          auth0:
+            client-id: kNMFNfTdc9DUSGjGB1PwIOVaIU0cXhj7
+            client-secret: mssl04OubhDTnTu2iyi2klyAju4tjJJ5xUEMwLW-50qMlBxsAMdvSfImY5IKvynP
+            issuer-uri: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/
+            redirect-uri: http://localhost:8081/login/oauth2/code/auth0
+        provider:
+          auth0:
+            authorization-uri: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/authorize
+            token-uri: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/oauth/token
+            user-info-uri: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/userinfo
+            jwk-set-uri: https://dev-cxy2s4rbkgtrmylk.us.auth0.com/.well-known/jwks.json
+services:
+  user-account:
+    base-url: http://UserAccountRegistration

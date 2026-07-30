@@ -49,9 +49,7 @@ task buildAllServices {
             ':platform:service-registry:build',
             ':platform:api-gateway:build',
             ':services:user-service:build',
-            ':services:payment-service:build',
-            ':services:ai-service:build',
-            ':services:product-service:build'
+            ':services:payment-service:build'
     )
 }
 
@@ -65,7 +63,5 @@ task buildAllImages {
             ':platform:api-gateway:bootBuildImage',
             ':services:user-service:bootBuildImage',
             ':services:payment-service:buildNative', // Quarkus
-            ':services:ai-service:bootBuildImage',
-            ':services:product-service:buildNative'  // Quarkus
     )
 }

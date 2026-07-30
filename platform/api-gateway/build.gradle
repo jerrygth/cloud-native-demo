@@ -24,6 +24,3 @@ dependencies {
 
 }
 
-bootRun {
-    systemProperty 'spring.profiles.active', 'local'
-}
