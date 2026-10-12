@@ -65,6 +65,7 @@ public class GlobalRequestFilter implements GlobalFilter, Ordered {
                 .map(OAuth2AuthorizedClient::getAccessToken)
                 .map(OAuth2AccessToken::getTokenValue)
                 .flatMap(token -> {
+                    log.debug("Bearer Token: {}", token);
                           ServerWebExchange mutatedExchange = exchange.mutate()
                     .request(r -> r.headers(headers ->
                                 headers.setBearerAuth(token)

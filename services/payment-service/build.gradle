@@ -1,9 +1,18 @@
 plugins {
     id 'io.quarkus'
     id 'quarkus-conventions'
+    id 'me.champeau.jmh' version '0.7.2'
 }
 
 description = 'Payment Service'
+
+jmh {
+    resultFormat = 'JSON'
+    resultsFile = layout.buildDirectory
+            .file("reports/jmh/results.json")
+            .get().asFile
+    profilers = ['gc', 'stack']
+}
 
 dependencies {
 
@@ -27,6 +36,9 @@ dependencies {
     //implementation libs.stork.service.registration.eureka
     implementation "com.github.fmcejudo:quarkus-eureka:1.2.0"
     implementation 'io.quarkus:quarkus-container-image-docker'
+
+    jmh 'org.openjdk.jmh:jmh-core:1.37'
+    jmhAnnotationProcessor 'org.openjdk.jmh:jmh-generator-annprocess:1.37'
 
     // Observability
     implementation libs.quarkus.smallrye.health
@@ -56,4 +68,8 @@ dependencies {
 tasks.named('test') {
     useJUnitPlatform()
     systemProperty 'java.util.logging.manager', 'org.jboss.logmanager.LogManager'
+}
+
+tasks.named('jmhJar') {
+    zip64 = true
 }

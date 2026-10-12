@@ -5,6 +5,7 @@ import com.org.dev.payment.dto.PaymentDTOs.*;
 import com.org.dev.payment.entity.Payment;
 import com.org.dev.payment.entity.PaymentStatus;
 import com.org.dev.payment.exception.PaymentException;
+import com.org.dev.payment.metrics.PaymentMetrics;
 import com.razorpay.*;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -30,6 +31,12 @@ public class PaymentService {
     @ConfigProperty(name = "razorpay.webhook.secret")
     String webhookSecret;
 
+    @ConfigProperty(name = "loadtest.mode")
+    boolean loadTestMode;
+
+    @Inject
+    PaymentMetrics paymentMetrics;
+
 
 
     // ── RAZORPAY CLIENT ───────────────────────────────────────────
@@ -54,29 +61,34 @@ public class PaymentService {
             orderRequest.put("receipt", request.receipt());
             orderRequest.put("payment_capture", 1);           // auto-capture on payment
             log.debug("Before calling Razorpay API with orderRequest: " + orderRequest.toString());
-            // ── CALL RAZORPAY API ──────────────────────────────────
-            Order razorpayOrder = razorpay().orders.create(orderRequest);
-            String razorpayOrderId = razorpayOrder.get("id");
-
+            String razorpayOrderId;
+            if (loadTestMode) {
+                razorpayOrderId = "order_LT" + java.util.UUID.randomUUID().toString().replace("-", "").substring(0, 14);
+            }else{
+                // ── CALL RAZORPAY API ──────────────────────────────────
+                Order razorpayOrder = razorpay().orders.create(orderRequest);
+                razorpayOrderId = razorpayOrder.get("id");
+            }
             // ── SAVE TO DB ─────────────────────────────────────────
             Payment payment = new Payment();
             payment.userId = userId;
             payment.productName = request.productName();
             payment.amount = request.amount();
-            payment.currency = razorpayOrder.get("currency");
+            payment.currency = orderRequest.getString("currency");
             payment.receipt = request.receipt();
             payment.razorpayOrderId = razorpayOrderId;
             payment.status = PaymentStatus.CREATED;
             payment.persist();
-
+            paymentMetrics.incrementOrderCreated(payment.currency);
             // keyId is returned so React can initialise the Razorpay popup
             return new OrderResponse(
                     razorpayOrderId,
-                    (int) razorpayOrder.get("amount"),
-                    razorpayOrder.get("currency"),
-                    razorpayOrder.get("receipt"),
+                    orderRequest.getInt("amount"),
+                    orderRequest.getString("currency"),
+                    orderRequest.getString("receipt"),
                     keyId   // Public key — safe to expose
             );
+
 
         } catch (RazorpayException e) {
             throw new PaymentException.ProviderException("Razorpay order creation failed: " + e.getMessage());
@@ -92,18 +104,20 @@ public class PaymentService {
         signatureParams.put("razorpay_order_id", request.razorpayOrderId());
         signatureParams.put("razorpay_payment_id", request.razorpayPaymentId());
         signatureParams.put("razorpay_signature", request.razorpaySignature());
-
+        long start = System.nanoTime();
+        boolean isValid = false;
         try {
-            boolean isValid = Utils.verifyPaymentSignature(signatureParams, keySecret);
+            isValid = Utils.verifyPaymentSignature(signatureParams, keySecret);
             if (!isValid) {
                 throw new PaymentException.SignatureVerificationException(
                         "Payment signature verification failed");
             }
-        } catch (RazorpayException e) {
+       }catch (RazorpayException e) {
             throw new PaymentException.SignatureVerificationException(
                     "Signature verification error: " + e.getMessage());
+        } finally {
+            paymentMetrics.recordVerification(System.nanoTime() - start, isValid);
         }
-
         // ── LOAD PAYMENT FROM DB ──────────────────────────────────
         Payment payment = Payment.findByRazorpayOrderId(request.razorpayOrderId());
         if (payment == null) {

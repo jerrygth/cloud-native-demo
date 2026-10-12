@@ -36,6 +36,10 @@ management:
     readinessState:
       enabled: true
   metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+        r2dbc.pool: true          # if pooling metrics are enabled
     tags:
       application: api-gateway
     export:
